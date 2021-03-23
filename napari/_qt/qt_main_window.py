@@ -459,10 +459,24 @@ class Window:
         toggle_visible.setShortcut('Ctrl+M')
         toggle_visible.setStatusTip(trans._('Hide Menubar'))
         toggle_visible.triggered.connect(self._toggle_menubar_visible)
+
+        # Add theme menu:
         toggle_theme = QAction(trans._('Toggle Theme'), self._qt_window)
         toggle_theme.setShortcut('Ctrl+Shift+T')
         toggle_theme.setStatusTip(trans._('Toggle theme'))
         toggle_theme.triggered.connect(self.qt_viewer.viewer._toggle_theme)
+        from ..utils.theme import available_themes
+
+        themes = available_themes()
+
+        theme_menu = QMenu(trans._('Theme'), parent=self._qt_window)
+        for theme in themes:
+            action = QAction(
+                trans._(theme), parent=self._qt_window, checkable=True
+            )
+            action.triggered.connect(self._update_theme)
+            theme_menu.addAction(action)
+
         toggle_fullscreen = QAction(
             trans._('Toggle Full Screen'), self._qt_window
         )
@@ -478,6 +492,7 @@ class Window:
         self.view_menu.addAction(toggle_fullscreen)
         self.view_menu.addAction(toggle_visible)
         self.view_menu.addAction(toggle_theme)
+        self.view_menu.addMenu(theme_menu)
         self.view_menu.addAction(toggle_play)
         self.view_menu.addSeparator()
 
@@ -1111,7 +1126,9 @@ class Window:
 
     def _update_theme(self, event=None):
         """Update widget color theme."""
+        print(event)
         if event:
+            print(event.value)
             value = event.value
             SETTINGS.application.theme = value
             self.qt_viewer.viewer.theme = value
